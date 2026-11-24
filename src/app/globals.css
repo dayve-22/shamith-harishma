@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --kumkum-deep: #380407;
+    --kumkum-rich: #6b0d13;
+    --kumkum-bright: #8a141b;
+    --kumkum-card: #560a0f;
+    --gold-bright: #ffd778;
+    --gold-primary: #d4af37;
+    --gold-antique: #b38618;
+    --gold-light: #fce8b3;
+    --kasavu-ivory: #faf4e6;
+  }
+
+  body {
+    background-color: #3b0508;
+    background-image: 
+      radial-gradient(circle at 50% 0%, #7d1219 0%, transparent 65%),
+      radial-gradient(circle at 10% 40%, #52080c 0%, transparent 50%),
+      radial-gradient(circle at 90% 70%, #52080c 0%, transparent 50%);
+    color: #fdf5e6;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Typography Classes */
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+
+.font-cormorant {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-script {
+  font-family: 'Great Vibes', 'Pinyon Script', cursive;
+}
+
+.font-pinyon {
+  font-family: 'Pinyon Script', 'Great Vibes', cursive;
+}
+
+.font-malayalam {
+  font-family: 'Anek Malayalam', 'Manjari', sans-serif;
+}
+
+/* Image-2 Matched Royal Temple Gold Gradients */
+.gold-gradient-text {
+  background: linear-gradient(135deg, #fff7d6 0%, #ffd778 35%, #e5b028 70%, #b38618 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.kumkum-gradient-text {
+  background: linear-gradient(135deg, #ffd778 0%, #ff8a8f 50%, #d42b32 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-gradient-border {
+  border-image: linear-gradient(to bottom, #d4af37, #fdf1cd, #a67c1e) 1;
+}
+
+.gold-box-shadow {
+  box-shadow: 0 10px 35px -8px rgba(212, 175, 55, 0.4),
+              0 0 15px 0 rgba(212, 175, 55, 0.2);
+}
+
+.gold-glow {
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.55));
+}
+
+.diya-flame {
+  filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 22px #ea580c);
+  animation: flicker 1.8s infinite alternate ease-in-out;
+}
+
+@keyframes flicker {
+  0%, 100% {
+    opacity: 0.92;
+    transform: scale(1) translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.06) translateY(-1.5px);
+  }
+  60% {
+    opacity: 0.85;
+    transform: scale(0.95) translateY(1px);
+  }
+  80% {
+    opacity: 0.98;
+    transform: scale(1.03) translateY(-0.5px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.5), 0 0 40px rgba(212, 175, 55, 0.25);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(212, 175, 55, 0.85), 0 0 70px rgba(212, 175, 55, 0.45);
+    transform: scale(1.03);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 14s linear infinite;
+}
+
+@keyframes bloomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1.15);
+  }
+}
+
+.animate-bloom-in {
+  animation: bloomIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #2b0407;
+}
+::-webkit-scrollbar-thumb {
+  background: #8a141b;
+  border-radius: 4px;
+  border: 1px solid #d4af37;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
+}
