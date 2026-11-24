@@ -19,18 +19,28 @@ export default function VideoDoorIntro({
 }: VideoDoorIntroProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const bgVideoRef = useRef<HTMLVideoElement | null>(null);
+  const hasInitializedRef = useRef(false);
+  const hasCompletedRef = useRef(false);
+  const onStartAudioRef = useRef(onStartAudio);
+  onStartAudioRef.current = onStartAudio;
+
   const [hasStarted, setHasStarted] = useState(false);
   const [doorReached, setDoorReached] = useState(false);
   const [doorOpened, setDoorOpened] = useState(false);
   const [showPlayFallback, setShowPlayFallback] = useState(false);
   const [isBlooming, setIsBlooming] = useState(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
   // Exact time when guests reach the doorway steps
   const DOOR_STOP_TIME = 2.35;
   // Video source provided by user
   const VIDEO_SRC = "/hf_20261124_120735_055d76de-bc10-4c18-b528-daebdc91017c.mp4";
 
+  // Initial playback: Run strictly ONCE on component mount
   useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
     const video = videoRef.current;
     const bgVideo = bgVideoRef.current;
     if (!video) return;
@@ -47,19 +57,21 @@ export default function VideoDoorIntro({
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
+          setIsVideoLoaded(true);
           setHasStarted(true);
           if (bgVideoRef.current) {
             bgVideoRef.current.play().catch(() => {});
           }
-          onStartAudio();
+          onStartAudioRef.current();
         })
         .catch(() => {
           setShowPlayFallback(true);
         });
     }
-  }, [onStartAudio]);
+  }, []);
 
   const handleTimeUpdate = () => {
+    if (hasCompletedRef.current) return;
     const video = videoRef.current;
     const bgVideo = bgVideoRef.current;
     if (!video) return;
@@ -87,13 +99,13 @@ export default function VideoDoorIntro({
   };
 
   const handleOpenDoor = (e?: React.MouseEvent) => {
-    if (doorOpened) return;
+    if (doorOpened || hasCompletedRef.current) return;
     const video = videoRef.current;
     const bgVideo = bgVideoRef.current;
     if (!video) return;
 
     // Trigger soundtrack immediately upon click
-    onStartAudio();
+    onStartAudioRef.current();
 
     // Celebration confetti burst
     try {
@@ -128,6 +140,24 @@ export default function VideoDoorIntro({
   };
 
   const handleVideoEnded = () => {
+    // Strictly prevent double-play: if already ended, ignore
+    if (hasCompletedRef.current) return;
+    hasCompletedRef.current = true;
+
+    // Explicitly pause both videos and clamp to final frame
+    if (videoRef.current) {
+      videoRef.current.pause();
+      if (videoRef.current.duration) {
+        videoRef.current.currentTime = videoRef.current.duration;
+      }
+    }
+    if (bgVideoRef.current) {
+      bgVideoRef.current.pause();
+      if (bgVideoRef.current.duration) {
+        bgVideoRef.current.currentTime = bgVideoRef.current.duration;
+      }
+    }
+
     // Golden sparkle finale as camera reaches inside
     try {
       confetti({
@@ -153,14 +183,14 @@ export default function VideoDoorIntro({
 
   return (
     <div className="relative w-full h-screen min-h-screen flex items-center justify-center bg-[#150103] overflow-hidden select-none">
-      {/* AMBIENT SAME-VIDEO BACKGROUND FOR LARGER SCREENS */}
+      {/* AMBIENT SAME-VIDEO BACKGROUND FOR LARGER SCREENS (Plays Once, Never Loops) */}
       <div className="hidden md:block absolute inset-0 w-full h-full pointer-events-none overflow-hidden select-none">
         <video
           ref={bgVideoRef}
           src={VIDEO_SRC}
           playsInline
           muted={true}
-          loop={videoCompleted}
+          loop={false}
           className="w-full h-full object-cover filter blur-2xl opacity-60 scale-110 transition-transform duration-1000"
         />
 
@@ -200,14 +230,17 @@ export default function VideoDoorIntro({
           }
         }}
       >
-        {/* Main 9:16 Video - Permanently Muted */}
+        {/* Main 9:16 Video - Permanently Muted, Plays ONCE (Never Loops) */}
         <video
           ref={videoRef}
           src={VIDEO_SRC}
           playsInline
           preload="auto"
           muted={true}
-          loop={videoCompleted}
+          loop={false}
+          onCanPlay={() => setIsVideoLoaded(true)}
+          onLoadedData={() => setIsVideoLoaded(true)}
+          onPlaying={() => setIsVideoLoaded(true)}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleVideoEnded}
           className={`h-full w-full object-cover transition-all duration-1000 ${
@@ -215,8 +248,69 @@ export default function VideoDoorIntro({
           }`}
         />
 
-        {/* Fallback Play Button if browser blocked autoplay */}
-        {showPlayFallback && !hasStarted && (
+        {/* INITIAL LOADING SPLASH SCREEN (Shows "ഷമിത്തിന്റെ കല്യാണം" during video loading delay) */}
+        <div
+          className={`absolute inset-0 z-40 flex flex-col items-center justify-center bg-gradient-to-b from-[#3b0508] via-[#240305] to-[#120102] transition-opacity duration-700 select-none ${
+            isVideoLoaded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+          }`}
+        >
+          <div className="flex flex-col items-center text-center px-6 space-y-4 max-w-sm animate-fade-in">
+            {/* Sacred Golden Diya */}
+            <div className="relative mb-1">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#ffd778]/40 via-[#fce8b3]/30 to-transparent blur-md absolute -inset-2 animate-pulse" />
+              <span className="text-4xl sm:text-5xl drop-shadow-[0_0_20px_rgba(255,215,120,0.8)]">🪔</span>
+            </div>
+
+            {/* Requested Malayalam Title: ഷമിത്തിന്റെ കല്യാണം */}
+            <div className="space-y-2">
+              <h1 className="font-malayalam text-3xl sm:text-4xl font-extrabold gold-gradient-text tracking-wide drop-shadow-[0_4px_16px_rgba(212,175,55,0.5)]">
+                ഷമിത്തിന്റെ കല്യാണം
+              </h1>
+              <p className="font-cinzel text-xs sm:text-sm text-[#fce8b3] tracking-[0.25em] uppercase font-bold">
+                Shamith &amp; Harishma
+              </p>
+            </div>
+
+            {/* Golden Knot Divider */}
+            <div className="flex items-center justify-center gap-3 w-40 my-2">
+              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#ffd778]/70" />
+              <span className="text-[#ffd778] text-xs">✦</span>
+              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#ffd778]/70" />
+            </div>
+
+            {/* Subtle Loading Pulse Message */}
+            <div className="flex items-center gap-2 pt-2 text-[#ffd778]/90">
+              <span className="w-2 h-2 rounded-full bg-[#ffd778] animate-ping" />
+              <span className="font-cormorant italic text-sm text-[#fce8b3] tracking-wide">
+                Welcome to the Wedding Invitation
+              </span>
+            </div>
+
+            {/* Fallback Tap to Enter Button if device blocks autoplay */}
+            {showPlayFallback && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (videoRef.current) {
+                    videoRef.current.play().then(() => {
+                      setIsVideoLoaded(true);
+                      setHasStarted(true);
+                      setShowPlayFallback(false);
+                      onStartAudio();
+                    }).catch(() => {});
+                  }
+                }}
+                className="mt-4 px-7 py-3 rounded-full bg-gradient-to-r from-[#ffd778] via-[#fce8b3] to-[#aa8420] text-[#140a05] font-cinzel font-bold text-xs tracking-wider shadow-2xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                <span>Tap to Enter</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Fallback Play Button if browser blocked autoplay (after splash) */}
+        {showPlayFallback && !hasStarted && isVideoLoaded && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60">
             <button
               onClick={() => {

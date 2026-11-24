@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import VideoDoorIntro from "@/components/VideoDoorIntro";
 import HeroSection from "@/components/HeroSection";
 import CoupleStoryCard from "@/components/CoupleStoryCard";
@@ -20,7 +20,7 @@ export default function WeddingPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Play Pesamale soundtrack continuously throughout the whole experience
-  const startAudio = () => {
+  const startAudio = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -30,11 +30,11 @@ export default function WeddingPage() {
         // Handled upon first user interaction
       });
     }
-  };
+  }, []);
 
-  const handleOpenInvitation = () => {
+  const handleOpenInvitation = useCallback(() => {
     setInvitationOpened(true);
-  };
+  }, []);
 
   // Ultra-smooth cinematic cubic-bezier camera glide down
   const cinematicScrollTo = (targetY: number, durationMs = 1500) => {
@@ -62,7 +62,7 @@ export default function WeddingPage() {
   };
 
   // ONLY AFTER clicking "You're Welcome" AND after video finishes, unlock and scroll down
-  const handleVideoComplete = () => {
+  const handleVideoComplete = useCallback(() => {
     setVideoCompleted(true);
 
     // Buttery smooth glide down from the doorway into the wedding card
@@ -73,7 +73,7 @@ export default function WeddingPage() {
         cinematicScrollTo(targetY, 1500);
       }
     }, 350);
-  };
+  }, []);
 
   // Auto-scroll through invitation: Activated ONLY after video is completely finished
   useEffect(() => {
